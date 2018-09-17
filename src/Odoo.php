@@ -778,8 +778,30 @@ class Odoo
         if (is_string($ids))
             throw new OdooException($ids);
 
-        $result = $this->call($model, $method, [$ids->toArray(), $data]);
+        if (empty($ids))
+            throw new OdooException($ids);
+
+        $result = $this->call_execute($model, $method, $ids[0], $data);
 
         return $this->makeResponse($result, 0);
+    }
+
+    /**
+     * Run execute call with provided params.
+     *
+     * @param $params
+     * @return Collection
+     */
+    public function call_execute($params)
+    {
+        //Prevent user forgetting connect with the ERP.
+        $this->autoConnect();
+
+        $args = array_merge(
+            [$this->db, $this->uid, $this->password],
+            func_get_args()
+        );
+
+        return collect(call_user_func_array([$this->object,'execute'], $args));
     }
 }
