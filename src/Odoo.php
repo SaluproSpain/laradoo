@@ -755,4 +755,31 @@ class Odoo
     {
         if (!$this->uid) $this->connect();
     }
+
+    /**
+     * Call to custom method.
+     * returns true except when an error happened.
+     * @param string $model
+     * @param string $method
+     * @param array $data
+     * @return mixed|string
+     * @throws OdooException
+     */
+    public function customMethod($model, $method, array $data)
+    {
+        if ($this->hasNotProvided($this->condition))
+            return "To prevent updating all records you must provide at least one condition. Using where method would solve this.";
+
+
+        $ids = $this->search($model);
+
+        //If string it can't continue for retrieving models
+        //Throw exception with the error.
+        if (is_string($ids))
+            throw new OdooException($ids);
+
+        $result = $this->call($model, $method, [$ids->toArray(), $data]);
+
+        return $this->makeResponse($result, 0);
+    }
 }
