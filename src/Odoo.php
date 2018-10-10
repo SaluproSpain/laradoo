@@ -765,23 +765,23 @@ class Odoo
      * @return mixed|string
      * @throws OdooException
      */
-    public function customMethod($model, $method, array $data)
+    public function customMethod($model, $method, array $extra_params = null, array $data)
     {
-        if ($this->hasNotProvided($this->condition))
-            return "To prevent updating all records you must provide at least one condition. Using where method would solve this.";
+//        if ($this->hasNotProvided($this->condition))
+//            return "To prevent updating all records you must provide at least one condition. Using where method would solve this.";
+//
+//
+//        $ids = $this->search($model);
+//
+//        //If string it can't continue for retrieving models
+//        //Throw exception with the error.
+//        if (is_string($ids))
+//            throw new OdooException($ids);
+//
+//        if (empty($ids))
+//            throw new OdooException($ids);
 
-
-        $ids = $this->search($model);
-
-        //If string it can't continue for retrieving models
-        //Throw exception with the error.
-        if (is_string($ids))
-            throw new OdooException($ids);
-
-        if (empty($ids))
-            throw new OdooException($ids);
-
-        $result = $this->call_execute($model, $method, $ids[0], $data);
+        $result = $this->call_execute($model, $method, $extra_params, $data);
 
         return $this->makeResponse($result, 0);
     }
@@ -792,16 +792,41 @@ class Odoo
      * @param $params
      * @return Collection
      */
-    public function call_execute($params)
+    public function call_execute($model, $method, $extra_params, $data)
     {
         //Prevent user forgetting connect with the ERP.
         $this->autoConnect();
 
-        $args = array_merge(
-            [$this->db, $this->uid, $this->password],
-            func_get_args()
-        );
+        $args = [$this->db, $this->uid, $this->password, $model, $method];
+
+        if(is_array($extra_params))   {
+            foreach($extra_params as $extra_param){
+                $args[] = $extra_param;
+            }
+        }
+
+        $args[] = $data;
 
         return collect(call_user_func_array([$this->object,'execute'], $args));
+    }
+
+    /**
+     * Cancel a record by Id or Ids.
+     * returns true except when an error happened.
+     *
+     * @param string $model
+     * @param array|Collection|int $id
+     * @return true|string
+     */
+    public function cancelById($model, $id)
+    {
+        if ($id instanceof Collection)
+            $id = $id->toArray();
+
+        $method = 'action_cancel';
+
+        $result = $this->call($model, $method, [$id]);
+
+        return $this->makeResponse($result, 0);
     }
 }
