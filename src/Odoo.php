@@ -831,12 +831,10 @@ class Odoo
     }
 
     /**
-     * Load data from config file.
+     * Set custom config.
      */
-    private function setConfigData($config)
+    public function setConfigData($config)
     {
-        //Load config data
-
         $this->suffix = array_key_exists('api-suffix', $config) ? $config['api-suffix'] : $this->suffix;
         $this->suffix = laradooAddCharacter($this->suffix, '/');
 
