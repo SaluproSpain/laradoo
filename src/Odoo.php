@@ -765,7 +765,7 @@ class Odoo
      * @return mixed|string
      * @throws OdooException
      */
-    public function customMethod($model, $method, array $extra_params = null, array $data)
+    public function customMethod($model, $method, array $extra_params = null, $data = null)
     {
 //        if ($this->hasNotProvided($this->condition))
 //            return "To prevent updating all records you must provide at least one condition. Using where method would solve this.";
@@ -805,7 +805,9 @@ class Odoo
             }
         }
 
-        $args[] = $data;
+        if($data != null){
+            $args[] = $data;
+        }
 
         return collect(call_user_func_array([$this->object,'execute'], $args));
     }
